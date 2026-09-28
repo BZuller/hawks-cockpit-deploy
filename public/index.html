@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17191a"><title>Hawks Cockpit</title><link rel="stylesheet" href="/style.css" defer></head>
+<body>
+  <div id="app" class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="brand"><span class="brand-mark">H</span><span>HAWKS<br><strong>COCKPIT</strong></span></div>
+      <nav id="nav"><button data-page="dashboard" class="active">Visão geral</button><button data-page="leads">Pipeline</button><button data-page="clients">Clientes</button><button data-page="finance">Financeiro</button></nav>
+      <div class="sidebar-foot"><span class="status-dot"></span> Operação interna <button id="change-password" type="button">Alterar senha</button><button id="logout" type="button">Sair</button></div>
+    </aside>
+    <div class="workspace"><header class="topbar"><button id="mobile-menu" aria-label="Abrir menu">☰</button><div><span id="breadcrumb">Hawks / Visão geral</span><h1 id="page-title">Visão geral</h1></div><div class="header-actions"><span id="today"></span><button id="primary-action" class="primary">Novo lead</button></div></header><main id="content" tabindex="-1"></main></div>
+  </div>
+  <div id="login" class="login-wrap hidden"><div class="login-panel"><div class="brand"><span class="brand-mark">H</span><span>HAWKS<br><strong>COCKPIT</strong></span></div><h1>Entre para acompanhar a Hawks.</h1><p>Dados comerciais e financeiros em um só lugar.</p><form id="login-form"><label>E-mail<input name="email" type="email" autocomplete="username" required></label><label>Senha<input name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Entrar no Cockpit</button><p id="login-error" class="error" role="alert"></p></form></div></div>
+  <div id="drawer-backdrop" class="backdrop hidden"></div><aside id="drawer" class="drawer hidden" aria-label="Formulário"><div class="drawer-head"><div><span id="drawer-caption"></span><h2 id="drawer-title"></h2></div><button id="drawer-close" aria-label="Fechar">×</button></div><div id="drawer-body"></div></aside>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="/app.js" defer></script>
+</body></html>

@@ -1,0 +1,13 @@
+{
+  "name": "hawks-cockpit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node server.ts",
+    "check": "node --check server.ts && node --check public/app.js",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": { "pg": "8.16.3" }
+}
