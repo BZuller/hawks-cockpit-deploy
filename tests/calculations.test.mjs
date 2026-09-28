@@ -9,6 +9,8 @@ test('MRR soma apenas clientes ativos com centavos exatos', () => {
     { name: 'Ciclo', status: 'inativo', mrr: '250.00' }
   ]), 2900);
   assert.equal(money(cents('0.10') + cents('0.20')), 0.30);
+  assert.equal(cents('1.005'), NaN);
+  assert.equal(cents('2400,01'), 240001);
 });
 
 test('resultado financeiro usa entradas e saídas do mês correto', () => {
