@@ -12,7 +12,9 @@ Uma aplicação Node.js 24/TypeScript sem framework de interface e um PostgreSQL
 
 ## Autenticação e usuários
 
-Defina `SESSION_SECRET` apenas no ambiente do Coolify. Se `BOOTSTRAP_EMAIL` e `BOOTSTRAP_PASSWORD` forem fornecidos, o usuário inicial é criado com esses dados. Sem eles, a primeira inicialização cria `infra@hawksbi.com.br` com senha aleatória de uso inicial exibida uma vez nos logs de implantação. Guarde a senha e altere-a pelo menu da aplicação. Não há cadastro público. Para usuários adicionais, use uma operação administrativa controlada no banco; não compartilhe credenciais.
+Defina `SESSION_SECRET` apenas no ambiente do Coolify. Se `BOOTSTRAP_EMAIL` e `BOOTSTRAP_PASSWORD` forem fornecidos, o usuário inicial é criado com esses dados. Sem eles, a primeira inicialização cria `infra@hawksbi.com.br` com senha aleatória de uso inicial exibida uma vez nos logs de implantação. Guarde a senha e altere-a pelo menu da aplicação. Não há cadastro público. O usuário técnico `infra@hawksbi.com.br` pode criar acessos nomeados pela rota administrativa autenticada `POST /api/admin/users`; a senha temporária só aparece na resposta dessa criação. Cada usuário pode alterar a própria senha no menu.
+
+Leads e clientes novos recebem automaticamente o nome do usuário logado como responsável. O campo pode ser transferido a outro usuário interno no formulário. O pipeline possui visualização em quadro e em tabela; as mudanças de estágio continuam gerando histórico.
 
 ## Deploy e recuperação
 

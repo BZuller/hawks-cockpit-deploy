@@ -62,6 +62,8 @@ Raios de 6 a 10 px. Sem cápsulas ou cartões aninhados decorativos.
 
 Tabelas priorizam empresa, estágio, próxima ação e MRR; ações aparecem na mesma linha no desktop e no próprio registro no mobile. Formulários em gaveta mantêm contexto e oferecem cancelamento claro. Estados vazios indicam a primeira ação útil.
 
+O pipeline oferece quadro e tabela com os mesmos filtros. O quadro mantém as oito etapas fixas em colunas, número de negócios por etapa, empresa, MRR potencial, próxima ação e responsável em cada cartão. No celular, as colunas deslizam horizontalmente com uma etapa por vez. O avanço comum acontece no próprio cartão; ganho e perda usam o formulário existente para preservar os dados obrigatórios. Clientes históricos aparecem em Ganho com identificação de base inicial, sem serem contados como novos prospects.
+
 ## Do's and Don'ts
 
 Fazer: destacar números com contexto temporal, explicar ausência de dados, preservar rapidez de cadastro, verificar desktop e mobile em navegador real. Evitar: gráficos decorativos, excesso de cards, dados fictícios em produção, vazios sem orientação e métricas que confundam MRR com caixa.

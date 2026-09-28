@@ -7,14 +7,16 @@ test('CRUD e cálculos no PostgreSQL exclusivo, com rollback', { skip: !process.
   const db = await pool.connect();
   try {
     await db.query('begin');
+    const before = await db.query("select coalesce(sum(mrr),0)::numeric as amount from clients where status='ativo'");
     const marker = 'Teste transacional Hawks Cockpit';
     const created = await db.query(
-      'insert into leads(company,next_action,next_action_at,potential_mrr) values($1,$2,current_date,300) returning id,stage,next_action',
-      [marker, 'Ligar para decisor']
+      'insert into leads(company,next_action,next_action_at,potential_mrr,owner) values($1,$2,current_date,300,$3) returning id,stage,next_action,owner',
+      [marker, 'Ligar para decisor', 'Bruno']
     );
     const id = created.rows[0].id;
     assert.equal(created.rows[0].stage, 'Prospect');
     assert.equal(created.rows[0].next_action, 'Ligar para decisor');
+    assert.equal(created.rows[0].owner, 'Bruno');
     await db.query("insert into lead_stage_history(lead_id,from_stage,to_stage) values($1,null,'Prospect')", [id]);
     await db.query('update leads set contact=$2,next_action=$3 where id=$1', [id, 'Contato Teste', 'Enviar proposta']);
     const edited = await db.query('select contact,next_action from leads where id=$1', [id]);
@@ -26,9 +28,9 @@ test('CRUD e cálculos no PostgreSQL exclusivo, com rollback', { skip: !process.
     await db.query("update leads set closed_at=current_date,closed_mrr=300,product='Visto' where id=$1", [id]);
     const history = await db.query('select to_stage from lead_stage_history where lead_id=$1 order by id', [id]);
     assert.deepEqual(history.rows.map(x=>x.to_stage), ['Prospect','Contatado','Conversa com decisor','Reunião marcada','Reunião realizada','Proposta/Teste','Ganho']);
-    await db.query("insert into clients(name,product,mrr,status,lead_id) values($1,'Visto',300,'ativo',$2)", [marker,id]);
+    await db.query("insert into clients(name,product,mrr,status,lead_id,owner) values($1,'Visto',300,'ativo',$2,'Bruno')", [marker,id]);
     const mrr = await db.query("select sum(mrr)::numeric as amount from clients where status='ativo'");
-    assert.equal(Number(mrr.rows[0].amount), 3200);
+    assert.equal(Number(mrr.rows[0].amount), Number(before.rows[0].amount)+300);
     const lost = await db.query("insert into leads(company,stage,loss_reason,closed_at) values($1,'Perdido','sem orçamento',current_date) returning loss_reason", [marker+' perda']);
     assert.equal(lost.rows[0].loss_reason, 'sem orçamento');
     await db.query("insert into financial_transactions(kind,category,description,amount) values('entrada','mensalidade',$1,500),('saida','infraestrutura',$2,100)", [marker,marker]);
