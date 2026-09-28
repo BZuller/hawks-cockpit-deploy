@@ -10,7 +10,7 @@ const brl=(v)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 const day=(v)=>v?String(v).slice(0,10).split('-').reverse().join('/'):'—';
 const dateInput=(v)=>v?String(v).slice(0,10):'';
 const opts=(items,value)=>items.map(x=>`<option value="${esc(x)}" ${x===value?'selected':''}>${esc(x)}</option>`).join('');
-const field=(name,label,value='',type='text',extra='')=>`<label class="${extra}">${label}<input name="${name}" type="${type}" value="${esc(value)}"></label>`;
+const field=(name,label,value='',type='text',extra='')=>`<label class="${extra}">${label}<input name="${name}" type="${type}" ${type==='number'?'step="0.01" inputmode="decimal"':''} value="${esc(value)}"></label>`;
 const select=(name,label,items,value='',extra='')=>`<label class="${extra}">${label}<select name="${name}">${opts(items,value)}</select></label>`;
 const textarea=(name,label,value='',extra='wide')=>`<label class="${extra}">${label}<textarea name="${name}">${esc(value)}</textarea></label>`;
 const formData=(form)=>Object.fromEntries(new FormData(form).entries());
