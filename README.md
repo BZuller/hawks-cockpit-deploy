@@ -18,6 +18,8 @@ Defina `SESSION_SECRET` apenas no ambiente do Coolify. Se `BOOTSTRAP_EMAIL` e `B
 
 Crie um projeto isolado no Coolify com esta aplicação e um PostgreSQL próprio. Configure `DATABASE_URL` com a conexão interna do banco e as variáveis de autenticação como secrets. Faça deploy do Dockerfile, confirme `/health`, acesse a URL HTTPS e efetue login. Backup: use a opção Backups do PostgreSQL no Coolify; restaure primeiro o banco, então faça deploy da aplicação com o mesmo `SESSION_SECRET`. As migrations são versionadas e idempotentes.
 
+Produção atual: projeto `Hawks Cockpit`, recursos `hawks-cockpit-web` e `hawks-cockpit-db`, backup local diário com retenção de 14 cópias. O código canônico está no repositório privado `BZuller/hawks-cockpit`; o espelho `BZuller/hawks-cockpit-deploy` existe apenas para o Coolify obter o Dockerfile, pois a integração GitHub instalada não tem acesso ao repositório privado. Ambos precisam receber o mesmo commit em futuras alterações.
+
 ## Cálculos
 
 MRR = soma dos clientes ativos. MRR novo = MRR de clientes ativos iniciados no mês, excluindo os dois clientes históricos da base inicial. Receitas/despesas = transações lançadas no mês. Resultado = entradas menos saídas. Custos recorrentes = saídas marcadas recorrentes. Caixa gerencial = saldo inicial + transações a partir da data configurada. Novos prospects contam empresas cadastradas no mês pela data de criação do registro; follow-ups não aumentam a meta. Conversões usam o primeiro alcance de cada estágio no histórico, não o estágio atual. Taxas e ciclo de venda aparecem como dados insuficientes quando não há denominador ou ganhos.

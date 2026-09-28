@@ -6,6 +6,7 @@ RUN npm ci --omit=dev
 COPY server.ts ./
 COPY calculations.mjs ./
 COPY migrations ./migrations
+COPY tests ./tests
 COPY public ./public
 ENV NODE_ENV=production PORT=3000
 EXPOSE 3000

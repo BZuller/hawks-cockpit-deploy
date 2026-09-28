@@ -6,8 +6,8 @@ colors:
   paper: "#f6f5f1"
   surface: "#ffffff"
   line: "#dcded9"
-  orange: "#e96525"
-  orange-deep: "#af3f0a"
+  orange: "#be4810"
+  orange-deep: "#99350b"
   green: "#216a4d"
   red: "#aa3434"
 typography:
