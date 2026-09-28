@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual, createHmac } from 'node:crypto';
 import pg from 'pg';
+import { cents, money, monthlyFinance, prospectCohort, funnelReached, activeMrr } from './calculations.mjs';
 
 const { Pool } = pg;
 pg.types.setTypeParser(1082, value => value);
@@ -14,8 +15,6 @@ const products = ['Radar','Visto','Agendo','Ciclo','Conexo','Outro'];
 const lossReasons = ['preço','sem interesse','já possui solução','sem prioridade','não conseguiu chegar ao decisor','produto não atende','timing','sem orçamento','outro'];
 const inCats = ['mensalidade','implantação','projeto','outro'];
 const outCats = ['IA','infraestrutura','software/SaaS','domínio','APIs','contabilidade','impostos','marketing','comercial','outro'];
-const cents = (v) => Math.round(Number(v) * 100);
-const money = (v) => Number((v / 100).toFixed(2));
 const safeText = (v, max = 500) => String(v ?? '').trim().slice(0,max);
 const date = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : null;
 const allowed = (v, set, fallback = '') => set.includes(v) ? v : fallback;
@@ -82,18 +81,14 @@ async function dashboard(month) {
   ]);
   const m = sqlMonth(month), active = clients.rows.filter(x=>x.status==='ativo');
   const monthlyTx = tx.rows.filter(x=>String(x.occurred_at).slice(0,7)===m);
-  const incoming = monthlyTx.filter(x=>x.kind==='entrada').reduce((s,x)=>s+cents(x.amount),0);
-  const outgoing = monthlyTx.filter(x=>x.kind==='saida').reduce((s,x)=>s+cents(x.amount),0);
+  const { incoming, outgoing } = monthlyFinance(tx.rows,m);
   const recurringMap = new Map();
   tx.rows.filter(x=>x.kind==='saida' && x.recurring).sort((a,b)=>String(a.occurred_at).localeCompare(String(b.occurred_at))).forEach(x=>recurringMap.set(`${x.category}|${x.description}|${x.supplier}`,cents(x.amount)));
   const opening = setting.rows[0]?.value || null;
   const since = opening?.date;
   const cash = opening ? cents(opening.amount) + tx.rows.filter(x=>String(x.occurred_at).slice(0,10)>=since).reduce((s,x)=>s+(x.kind==='entrada'?1:-1)*cents(x.amount),0) : null;
-  const cohort = leads.rows.filter(x=>x.created_at.toISOString().slice(0,7)===m);
-  const reached = Object.fromEntries(stages.slice(0,7).map(x=>[x,0]));
-  const historyByLead = new Map();
-  for (const h of history.rows) { const set = historyByLead.get(String(h.lead_id)) || new Set(); set.add(h.to_stage); historyByLead.set(String(h.lead_id),set); }
-  for (const lead of cohort) { const set = historyByLead.get(String(lead.id)) || new Set(['Prospect']); for (const stage of stages.slice(0,7)) if (set.has(stage)) reached[stage]++; }
+  const cohort = prospectCohort(leads.rows,m);
+  const reached = funnelReached(cohort,history.rows,stages.slice(0,7));
   const wins = leads.rows.filter(x=>x.stage==='Ganho' && String(x.closed_at).slice(0,7)===m);
   const losses = leads.rows.filter(x=>x.stage==='Perdido' && String(x.closed_at).slice(0,7)===m);
   const cycleDays = wins.map(x=>(new Date(x.closed_at)-new Date(x.first_prospect_at))/86400000).filter(Number.isFinite);
@@ -101,7 +96,7 @@ async function dashboard(month) {
   for (const c of active) { byProduct[c.product]=(byProduct[c.product]||0)+cents(c.mrr); byClient[c.name]=(byClient[c.name]||0)+cents(c.mrr); }
   for (const t of monthlyTx.filter(x=>x.kind==='saida')) byCategory[t.category]=(byCategory[t.category]||0)+cents(t.amount);
   const businessDays = (()=>{ const [y,mo]=m.split('-').map(Number), end = m===new Date().toISOString().slice(0,7) ? new Date().getDate() : new Date(y,mo,0).getDate(); let n=0; for(let d=1;d<=end;d++){const day=new Date(y,mo-1,d).getDay();if(day!==0&&day!==6)n++;}return n;})();
-  return { month:m, mrr:money(active.reduce((s,x)=>s+cents(x.mrr),0)), newMrr:money(active.filter(x=>String(x.started_at).slice(0,7)===m).reduce((s,x)=>s+cents(x.mrr),0)), received:money(incoming), expenses:money(outgoing), result:money(incoming-outgoing), recurringCosts:money([...recurringMap.values()].reduce((a,b)=>a+b,0)), cash:cash===null?null:money(cash), byProduct:Object.fromEntries(Object.entries(byProduct).map(([k,v])=>[k,money(v)])), byClient:Object.fromEntries(Object.entries(byClient).map(([k,v])=>[k,money(v)])), byCategory:Object.fromEntries(Object.entries(byCategory).map(([k,v])=>[k,money(v)])), prospects:cohort.length, target:150, targetPercent:Math.round(cohort.length/150*100), perBusinessDay:businessDays?Number((cohort.length/businessDays).toFixed(1)):null, meetings:reached['Reunião realizada'], proposals:reached['Proposta/Teste'], wins:wins.length, losses:losses.length, wonMrr:money(wins.reduce((s,x)=>s+cents(x.closed_mrr||0),0)), reached, prospectToWin:cohort.length?Number((reached.Ganho/cohort.length*100).toFixed(1)):null, meetingToWin:reached['Reunião realizada']?Number((reached.Ganho/reached['Reunião realizada']*100).toFixed(1)):null, averageTicket:wins.length?money(wins.reduce((s,x)=>s+cents(x.closed_mrr||0),0)/wins.length):null, averageCycle:cycleDays.length?Number((cycleDays.reduce((a,b)=>a+b,0)/cycleDays.length).toFixed(1)):null };
+  return { month:m, mrr:activeMrr(clients.rows), newMrr:money(active.filter(x=>x.source!=='Dado inicial autorizado'&&String(x.started_at).slice(0,7)===m).reduce((s,x)=>s+cents(x.mrr),0)), received:money(incoming), expenses:money(outgoing), result:money(incoming-outgoing), recurringCosts:money([...recurringMap.values()].reduce((a,b)=>a+b,0)), cash:cash===null?null:money(cash), byProduct:Object.fromEntries(Object.entries(byProduct).map(([k,v])=>[k,money(v)])), byClient:Object.fromEntries(Object.entries(byClient).map(([k,v])=>[k,money(v)])), byCategory:Object.fromEntries(Object.entries(byCategory).map(([k,v])=>[k,money(v)])), prospects:cohort.length, target:150, targetPercent:Math.round(cohort.length/150*100), perBusinessDay:businessDays?Number((cohort.length/businessDays).toFixed(1)):null, meetings:reached['Reunião realizada'], proposals:reached['Proposta/Teste'], wins:wins.length, losses:losses.length, wonMrr:money(wins.reduce((s,x)=>s+cents(x.closed_mrr||0),0)), reached, prospectToWin:cohort.length?Number((reached.Ganho/cohort.length*100).toFixed(1)):null, meetingToWin:reached['Reunião realizada']?Number((reached.Ganho/reached['Reunião realizada']*100).toFixed(1)):null, averageTicket:wins.length?money(wins.reduce((s,x)=>s+cents(x.closed_mrr||0),0)/wins.length):null, averageCycle:cycleDays.length?Number((cycleDays.reduce((a,b)=>a+b,0)/cycleDays.length).toFixed(1)):null };
 }
 
 async function api(req,res,url) {

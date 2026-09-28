@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY server.ts ./
+COPY calculations.mjs ./
 COPY migrations ./migrations
 COPY public ./public
 ENV NODE_ENV=production PORT=3000

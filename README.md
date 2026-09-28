@@ -20,7 +20,7 @@ Crie um projeto isolado no Coolify com esta aplicação e um PostgreSQL próprio
 
 ## Cálculos
 
-MRR = soma dos clientes ativos. MRR novo = MRR de clientes ativos iniciados no mês. Receitas/despesas = transações lançadas no mês. Resultado = entradas menos saídas. Custos recorrentes = saídas marcadas recorrentes. Caixa gerencial = saldo inicial + transações a partir da data configurada. Novos prospects contam empresas cadastradas no mês pela data da primeira prospecção; follow-ups não aumentam a meta. Conversões usam o primeiro alcance de cada estágio no histórico, não o estágio atual. Taxas e ciclo de venda aparecem como dados insuficientes quando não há denominador ou ganhos.
+MRR = soma dos clientes ativos. MRR novo = MRR de clientes ativos iniciados no mês, excluindo os dois clientes históricos da base inicial. Receitas/despesas = transações lançadas no mês. Resultado = entradas menos saídas. Custos recorrentes = saídas marcadas recorrentes. Caixa gerencial = saldo inicial + transações a partir da data configurada. Novos prospects contam empresas cadastradas no mês pela data de criação do registro; follow-ups não aumentam a meta. Conversões usam o primeiro alcance de cada estágio no histórico, não o estágio atual. Taxas e ciclo de venda aparecem como dados insuficientes quando não há denominador ou ganhos.
 
 ## Limites
 
